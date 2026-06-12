@@ -328,25 +328,32 @@ Room 数据变化 → LiveData 通知 → adapter.setTransactions()
 
 **路径**: `com.transsion.ledger.ui.calendar.MonthCalendarView`  
 **父类**: 无（纯 Java 类）  
-**职责**: 月历网格逻辑（非 Android View），操作 `view_calendar.xml` 中的 GridLayout。
+**职责**: 月历网格逻辑（非 Android View），操作 `view_calendar.xml` 中的 GridLayout。对外 API 均为 `public`，供 `CalendarFragment` 与 `AddTransactionSheet` 复用。
 
 | 方法 | 参数 | 返回值 | 作用 |
 |------|------|--------|------|
-| `MonthCalendarView(View)` | `rootView` — `view_calendar.xml` 的根 | — | 构造：绑定 `grid_days`、`txt_month_title`、前后月按钮，初始化当月 |
+| `MonthCalendarView(View)` **public** | `rootView` — `view_calendar.xml` 的根 | — | 默认构造（日历页）：格高 50dp，显示日支出 |
+| `MonthCalendarView(View, boolean)` **public** | `rootView`, `compact` | — | 紧凑模式（记账页 `view_calendar_sheet`）：格高 34dp，不显示日支出 |
 | `setOnDayClickListener(OnDayClickListener)` | `listener` | `void` | 注册日期点击回调 |
+| `setOnMonthChangedListener(OnMonthChangedListener)` | `listener` | `void` | 注册月份切换回调（日历页加载当月数据） |
+| `setOnMonthTitleClickListener(OnMonthTitleClickListener)` | `listener` | `void` | 注册标题点击回调（弹出年月选择） |
 | `setDailyExpenses(Map<String,Double>)` | `expenses` — key=`yyyy-MM-dd`, value=支出金额 | `void` | 接收每日支出数据，刷新网格 |
+| `setSelectedDate(String)` | `date` — `yyyy-MM-dd` | `void` | 高亮选中日期 |
 | `getCurrentYearMonth()` | — | `String` (`yyyy-MM`) | 获取当前显示的年月 |
-| `prevMonth()` (private) | — | `void` | 月份 -1，跨年处理，重建网格，通知 listener 月份变了 |
-| `nextMonth()` (private) | — | `void` | 月份 +1，跨年处理，重建网格，通知 listener 月份变了 |
+| `syncFromCalendar(Calendar)` | `cal` | `void` | 记账选日期：同步年月与选中高亮，不触发月份变更回调 |
+| `jumpToYearMonth(String)` | `yearMonth` — `yyyy-MM` | `void` | 跳转到指定年月并通知 `OnMonthChangedListener` |
+| `shiftMonth(int)` (private) | `delta` — ±1 | `void` | 前后月按钮：跨年处理，重建网格，通知 listener |
 | `updateTitle()` (private) | — | `void` | 更新标题为 `yyyy年M月` |
 | `buildGrid()` (private) | — | `void` | 清空网格 → 计算首日星期偏移 → 填充空 cell → 逐日生成 `createDayCell()` |
 | `createEmptyCell(Context)` | `ctx` | `View` | 创建空白占位 cell |
 | `createDayCell(Context, int, Double, boolean)` | `ctx`, `day`(日期号), `expense`(可null), `isToday` | `View` | 创建日期 cell：今日蓝色高亮 + 日期号 + 支出金额（红色，有则显示） |
 
-### 内部接口 OnDayClickListener
-| 方法 | 参数 | 作用 |
+### 公开接口（均为 public）
+| 接口 | 方法 | 作用 |
 |------|------|------|
-| `onDayClick(String)` | `date` — `yyyy-MM-dd` 或 null（月份切换时） | 日期点击回调 |
+| `OnDayClickListener` | `onDayClick(String date)` | 日期点击，`date` 为 `yyyy-MM-dd` |
+| `OnMonthChangedListener` | `onMonthChanged(String yearMonth)` | 月份切换，`yearMonth` 为 `yyyy-MM` |
+| `OnMonthTitleClickListener` | `onMonthTitleClick(String yearMonth)` | 标题点击，用于弹出年月选择器 |
 
 ---
 
@@ -388,7 +395,7 @@ Room 数据变化 → LiveData 通知 → adapter.setTransactions()
 | `onCreateView(...)` | 标准 | `View` | 加载 `sheet_add_transaction.xml` |
 | `onViewCreated(View, Bundle)` | `view`, `savedInstanceState` | `void` | 初始化 ViewModel、日期、绑定 View、构建数字键盘、设置事件，默认支出类别网格，进入 level=1；**末尾若 `pendingEdit != null` 则调用 `applyEditData()` 并清空** |
 | `bindViews(View)` (private) | `view` | `void` | 绑定 level01/level2_scroll/level3/level3_body、`grid_categories`/`grid_sub`、numpadContainer 等 |
-| `showDatePickerPanel()` (private) | — | `void` | 隐藏 `level3_body`，**占满 Level3** 展示内嵌月历（`view_calendar` + `buildSheetCalendarGrid()`）；点日期即选中并关闭 |
+| `showDatePickerPanel()` (private) | — | `void` | 隐藏 `level3_body`，展示 `view_calendar_sheet` + `MonthCalendarView(compact)`；无「选择日期」标题 |
 | `showTimePickerPanel()` (private) | — | `void` | 隐藏 `level3_body`，**占满 Level3** 展示时分老虎机滚轮（`NumberPicker` 时/分）；确定写回 |
 | `hidePickerPanels()` (private) | — | `void` | 关闭日期/时分面板，恢复 `level3_body`（含 4×4 键盘），刷新 `text_date`/`text_time` |
 | `showNoteEditor()` (private) | — | `void` | 底部弹起备注栏 + 遮罩，不挤压主界面 |
@@ -397,24 +404,24 @@ Room 数据变化 → LiveData 通知 → adapter.setTransactions()
 | `restoreSheetLayout()` (private) | — | `void` | 键盘收起后强制恢复 BottomSheet 固定高度，避免 Level 3 错位 |
 | `buildSubCategoryGrid(List)` (private) | `items` | `void` | Level 2：4 列网格渲染子项目，样式与 Level 1 `createGridCell()` 一致 |
 | `createGridCell(String,String,Runnable)` (private) | `emoji`, `name`, `onClick` | `LinearLayout` | 生成圆角 emoji+文字小模块格 |
-| `buildSheetCalendarGrid()` (private) | — | `void` | 在记账弹窗内绘制月历格，高亮今日/选中 |
-| `buildNumpad()` (private) | — | `void` | 动态生成 **4×4** 键盘（`1-9 0 . + - C 确认`），确认键 `onConfirm()` |
-| `updateAmountDisplay()` (private) | — | `void` | 刷新摘要金额（支出红/收入绿，支持 `-` 键切换负号显示） |
+| `setupCategory3Spinner()` (private) | — | `void` | 财务分类 `spinner_category3`（维持/消费/提升/社交），与账户 Spinner 同款；仅支出时 `card_category3` 可见 |
+| `updateAmountDisplay()` (private) | — | `void` | 刷新 `card_amount` 内金额（支出红/收入绿） |
 | `wrapPicker(NumberPicker, String)` (private) | `picker`, `label` | `LinearLayout` | 时分滚轮包装 |
 | `onTypeToggle(int)` (private) | `t` — 0=支出/1=收入 | `void` | 收支切换；Level 2/3 时**点当前或另一类型均回 Level 1**（另一类型会先 `selectType`）；Level 1 仅类型变化时切换 |
 | `selectType(int)` (private) | `t` — 0=支出/1=收入 | `void` | 刷新按钮样式 + 类别网格 + `applyFormLayoutWeights()` |
 | `placeTypeToggle(boolean)` (private) | `compactInHeader` | `void` | `false`=Level 1 全宽条；`true`=缩至 `header_type_slot`（返回键右侧） |
-| `applyFormLayoutWeights()` (private) | — | `void` | 支出 15/8/10/67；收入 18/12/70 比例分配摘要/财务分类/日期行/键盘（weight 合计 100） |
+| `applyFormLayoutWeights()` (private) | — | `void` | 支出 18/10/72；收入 15/12/73 — `summary_row`（账户+金额+财务 Spinner 同行）/ meta / 键盘 |
 | `buildCategoryGrid(String[])` (private) | `labels` — 分类数组 | `void` | 动态生成 4 列分类网格；每格为**竖排卡片**（圆角底 + 上方大 emoji + 下方文字），按空格拆分 `"🍚 吃"` 分两行显示，避免单行省略号；自动计算 `rowCount` |
 | `onCategorySelected(String)` (private) | `category` — 分类名 | `void` | 选中分类 → `buildSubCategoryGrid()` → 进入 level=2 子项目网格 |
 | `onSubSelected(String)` (private) | `sub` — 子项目名 | `void` | 选中子项目 → 「自定义」弹出 AlertDialog 输入框 → 否则 `showForm()` |
 | `showForm()` (private) | — | `void` | 进入 level=3（`level3_body` 含表单与 4×4 键盘一体布局） |
 | `setupListeners()` (private) | — | `void` | 绑定返回键、收支切换按钮、`textDateTime`→三列滚轮、财务四选一、确认按钮 |
 | `updateDateTimeDisplay()` (private) | — | `void` | 刷新 `text_date`（`yyyy年MM月dd日`）与 `text_time`（`HH时mm分`） |
-| `buildNumpad()` (private) | — | `void` | 动态生成 3×4 数字键盘（1-9、0、`.`、`⌫`），插入 `numpadContainer`（固定在弹窗底部） |
+| `buildNumpad()` (private) | — | `void` | 动态生成 **4×4** 键盘：右列 `⌫`/`C`/`.`；底行 `+`/`-`/`0`/`确认` |
+| `onPlusKey()` / `onMinusKey()` (private) | — | `void` | `+` 取消负号；`-` 在非零金额上切换 `amountNegative` 显示 |
 | `onNumClick(String)` (private) | `digit` — 数字或 `.` | `void` | 数字输入：处理首位0替换、防止双小数点 |
-| `onBackspace()` (private) | — | `void` | 退格：删末尾字符，剩空恢复 `0` |
-| `selectCategory3(int)` (private) | `idx` — 0-3 | `void` | 高亮选中财务分类（维持蓝/消费橙/提升紫/社交青），取消其他 |
+| `onBackspaceAmount()` (private) | — | `void` | 退格：删末尾字符，剩一位时恢复 `0` |
+| `selectCategory3(int)` (private) | `idx` — 0-3 | `void` | 同步 `category3` 与 `spinner_category3` 选中项 |
 | `onConfirm()` (private) | — | `void` | **核心提交**：校验金额可解析且 >0、**仅支出时**校验财务分类已选（`category3==-1 && type==0` 拦截）→ 构造 Transaction（`accountId=0` 默认账户）→ **editMode 时**调用 `viewModel.update()`，**否则** `viewModel.insert()` → Toast + dismiss |
 | `setEditTransaction(Transaction)` (public) | `t` — 待编辑记录 | `void` | **编辑模式入口（外部调用）**：仅把 `t` 暂存到 `pendingEdit`（此时 view 可能未创建），真正填充在 `onViewCreated` 里由 `applyEditData()` 完成 |
 | `applyEditData(Transaction)` (private) | `t` — 待编辑记录 | `void` | **实际预填**：设 `editMode/editId`，回填 type/category1-3/amount/date/note，按钮高亮，确认按钮改「保存修改」、标题「编辑记录」，跳 Level 1 |

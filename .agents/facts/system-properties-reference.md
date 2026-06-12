@@ -117,3 +117,11 @@
 | `res/menu/bottom_nav_menu.xml` | 底部导航 5 项菜单定义 |
 | `res/navigation/nav_graph.xml` | 导航图：4 个 Fragment |
 | `res/drawable/ic_*.xml` | 5 个底部导航图标（VectorDrawable） |
+
+## 发版前数据安全检查（涉及 Schema/Repository 写逻辑时）
+
+- [ ] `AppDatabase.version` 与本文件、Migration 注册一致；**无** `fallbackToDestructiveMigration`
+- [ ] Migration 无裸 `DROP` 业务表；仪器测试 `MigrationInstrumentedTest` 通过
+- [ ] 手测：新增/编辑/删除账单 → 账户余额正确；删非默认账户 → 余额并入默认
+- [ ] `CHANGELOG.md` 已置顶记录
+- [ ] 真机备份：`adb exec-out run-as com.transsion.ledger cat databases/ledger.db > backup.db`

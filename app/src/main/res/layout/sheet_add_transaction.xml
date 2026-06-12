@@ -165,120 +165,88 @@
                 android:orientation="vertical"
                 android:weightSum="100">
 
-                <com.google.android.material.card.MaterialCardView
-                    android:id="@+id/summary_card"
+                <LinearLayout
+                    android:id="@+id/summary_row"
                     android:layout_width="match_parent"
                     android:layout_height="0dp"
-                    android:layout_weight="15"
-                    app:cardCornerRadius="10dp"
-                    app:cardElevation="0dp"
-                    app:strokeColor="@color/divider"
-                    app:strokeWidth="0.5dp"
-                    app:cardBackgroundColor="#F8FAFC">
+                    android:layout_weight="18"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:baselineAligned="false">
 
-                    <LinearLayout
-                        android:layout_width="match_parent"
+                    <com.google.android.material.card.MaterialCardView
+                        android:id="@+id/card_account"
+                        android:layout_width="0dp"
                         android:layout_height="match_parent"
-                        android:orientation="horizontal"
-                        android:gravity="center_vertical"
-                        android:paddingHorizontal="10dp">
+                        android:layout_weight="1"
+                        app:cardCornerRadius="10dp"
+                        app:cardElevation="0dp"
+                        app:strokeColor="@color/divider"
+                        app:strokeWidth="0.5dp"
+                        app:cardBackgroundColor="#F8FAFC">
 
                         <Spinner
                             android:id="@+id/spinner_account"
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:minHeight="36dp"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:minHeight="40dp"
+                            android:paddingHorizontal="6dp"
                             android:background="@android:color/transparent" />
+                    </com.google.android.material.card.MaterialCardView>
 
-                        <View
-                            android:layout_width="8dp"
-                            android:layout_height="1dp" />
+                    <View
+                        android:layout_width="6dp"
+                        android:layout_height="1dp" />
+
+                    <com.google.android.material.card.MaterialCardView
+                        android:id="@+id/card_amount"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        app:cardCornerRadius="10dp"
+                        app:cardElevation="0dp"
+                        app:strokeColor="@color/divider"
+                        app:strokeWidth="0.5dp"
+                        app:cardBackgroundColor="#F8FAFC">
 
                         <TextView
                             android:id="@+id/text_amount"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:gravity="center_vertical|end"
+                            android:paddingHorizontal="10dp"
                             android:text="0"
                             android:textSize="22sp"
                             android:textStyle="bold"
                             android:textColor="@color/expense"
-                            android:maxLines="1" />
-                    </LinearLayout>
-                </com.google.android.material.card.MaterialCardView>
+                            android:maxLines="1"
+                            android:ellipsize="end" />
+                    </com.google.android.material.card.MaterialCardView>
 
-                <LinearLayout
-                    android:id="@+id/category3_group"
-                    android:layout_width="match_parent"
-                    android:layout_height="0dp"
-                    android:layout_weight="8"
-                    android:orientation="horizontal"
-                    android:gravity="center_vertical"
-                    android:layout_marginTop="3dp">
+                    <View
+                        android:id="@+id/spacer_before_category3"
+                        android:layout_width="6dp"
+                        android:layout_height="1dp" />
 
-                    <Button
-                        android:id="@+id/btn_cat_maintain"
+                    <com.google.android.material.card.MaterialCardView
+                        android:id="@+id/card_category3"
                         android:layout_width="0dp"
                         android:layout_height="match_parent"
                         android:layout_weight="1"
-                        android:layout_marginEnd="3dp"
-                        android:text="维持"
-                        android:textSize="10sp"
-                        android:minWidth="0dp"
-                        android:minHeight="0dp"
-                        android:padding="0dp"
-                        android:insetTop="0dp"
-                        android:insetBottom="0dp"
-                        android:textColor="#888"
-                        android:backgroundTint="#EEEEEE" />
+                        app:cardCornerRadius="10dp"
+                        app:cardElevation="0dp"
+                        app:strokeColor="@color/divider"
+                        app:strokeWidth="0.5dp"
+                        app:cardBackgroundColor="#F8FAFC">
 
-                    <Button
-                        android:id="@+id/btn_cat_consume"
-                        android:layout_width="0dp"
-                        android:layout_height="match_parent"
-                        android:layout_weight="1"
-                        android:layout_marginHorizontal="3dp"
-                        android:text="消费"
-                        android:textSize="10sp"
-                        android:minWidth="0dp"
-                        android:minHeight="0dp"
-                        android:padding="0dp"
-                        android:insetTop="0dp"
-                        android:insetBottom="0dp"
-                        android:textColor="#888"
-                        android:backgroundTint="#EEEEEE" />
-
-                    <Button
-                        android:id="@+id/btn_cat_improve"
-                        android:layout_width="0dp"
-                        android:layout_height="match_parent"
-                        android:layout_weight="1"
-                        android:layout_marginHorizontal="3dp"
-                        android:text="提升"
-                        android:textSize="10sp"
-                        android:minWidth="0dp"
-                        android:minHeight="0dp"
-                        android:padding="0dp"
-                        android:insetTop="0dp"
-                        android:insetBottom="0dp"
-                        android:textColor="#888"
-                        android:backgroundTint="#EEEEEE" />
-
-                    <Button
-                        android:id="@+id/btn_cat_social"
-                        android:layout_width="0dp"
-                        android:layout_height="match_parent"
-                        android:layout_weight="1"
-                        android:layout_marginStart="3dp"
-                        android:text="社交"
-                        android:textSize="10sp"
-                        android:minWidth="0dp"
-                        android:minHeight="0dp"
-                        android:padding="0dp"
-                        android:insetTop="0dp"
-                        android:insetBottom="0dp"
-                        android:textColor="#888"
-                        android:backgroundTint="#EEEEEE" />
+                        <Spinner
+                            android:id="@+id/spinner_category3"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:minHeight="40dp"
+                            android:paddingHorizontal="6dp"
+                            android:background="@android:color/transparent" />
+                    </com.google.android.material.card.MaterialCardView>
                 </LinearLayout>
 
                 <TextView
@@ -353,7 +321,7 @@
                     android:id="@+id/numpad_container"
                     android:layout_width="match_parent"
                     android:layout_height="0dp"
-                    android:layout_weight="67"
+                    android:layout_weight="72"
                     android:orientation="vertical"
                     android:layout_marginTop="4dp"
                     android:background="#F8FAFC"
@@ -394,33 +362,33 @@
                 android:orientation="vertical"
                 android:visibility="gone"
                 android:background="@color/surface"
-                android:padding="6dp">
-
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="选择日期"
-                    android:textSize="14sp"
-                    android:textStyle="bold"
-                    android:textColor="@color/text_primary"
-                    android:gravity="center"
-                    android:paddingBottom="4dp" />
+                android:paddingHorizontal="8dp"
+                android:paddingTop="4dp"
+                android:paddingBottom="8dp"
+                android:clipChildren="false"
+                android:clipToPadding="false">
 
                 <include
                     android:id="@+id/sheet_calendar"
-                    layout="@layout/view_calendar"
+                    layout="@layout/view_calendar_sheet"
                     android:layout_width="match_parent"
                     android:layout_height="0dp"
                     android:layout_weight="1" />
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btn_date_confirm"
+                    style="@style/Widget.Material3.Button"
                     android:layout_width="match_parent"
-                    android:layout_height="36dp"
-                    android:layout_marginTop="4dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:minHeight="44dp"
                     android:text="确定"
+                    android:textSize="15sp"
+                    android:textColor="@android:color/white"
+                    android:insetTop="0dp"
+                    android:insetBottom="0dp"
                     app:backgroundTint="@color/balance"
-                    app:cornerRadius="8dp" />
+                    app:cornerRadius="10dp" />
             </LinearLayout>
 
             <LinearLayout

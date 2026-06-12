@@ -6,7 +6,6 @@ import android.graphics.Color;
 import android.graphics.Rect;
 import android.graphics.Typeface;
 import android.graphics.drawable.GradientDrawable;
-import android.os.Build;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -33,7 +32,9 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
 import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowCompat;
 import androidx.core.view.WindowInsetsCompat;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
@@ -42,12 +43,16 @@ import com.transsion.ledger.R;
 import com.transsion.ledger.data.entity.Account;
 import com.transsion.ledger.data.entity.Transaction;
 import com.transsion.ledger.data.repository.AccountRepository;
+import com.transsion.ledger.ui.calendar.MonthCalendarView;
+import com.transsion.ledger.ui.calendar.YearMonthPickerDialog;
 import com.transsion.ledger.viewmodel.TransactionViewModel;
 
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -60,24 +65,21 @@ public class AddTransactionSheet extends BottomSheetDialogFragment {
     private static final float SHEET_HEIGHT_RATIO = 0.42f;
 
     // ---- 视图 ----
-    private View level01, level2, level3, level3Body, contentScroll, numpadContainer, category3Group, category3Label;
-    private View sheetRoot, panelDatePicker, panelTimePicker, panelNoteBottom, noteScrim, summaryCard, metaRow;
+    private View level01, level2, level3, level3Body, contentScroll, numpadContainer;
+    private View sheetRoot, panelDatePicker, panelTimePicker, panelNoteBottom, noteScrim, summaryRow, metaRow;
+    private View cardCategory3, spacerBeforeCategory3;
     private ViewGroup headerTypeSlot, level01TypeSlot;
     private LinearLayout typeToggleBar;
     private TextView textAmount, textDate, textTime, textNote, textDateTime, titleText;
-    private GridLayout gridCategories, gridSub, numpad, sheetCalendarGrid;
-    private TextView sheetCalendarTitle;
+    private GridLayout gridCategories, gridSub, numpad;
+    private MonthCalendarView sheetCalendarView;
     private LinearLayout timePickerContainer;
     private ImageButton btnBack;
     private Button btnTypeExpense, btnTypeIncome, btnConfirm;
-    private Button[] category3Buttons;
     private EditText editNote;
-    private Spinner spinnerAccount;
+    private Spinner spinnerAccount, spinnerCategory3;
     private NumberPicker npHourSheet, npMinSheet;
 
-    // ---- 表单内日历 ----
-    private String sheetCalendarYearMonth;
-    private final Calendar sheetCalendar = Calendar.getInstance(Locale.getDefault());
     private final SimpleDateFormat dateKeyFmt = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
     private boolean amountNegative = false;
 
@@ -112,6 +114,7 @@ public class AddTransactionSheet extends BottomSheetDialogFragment {
     private static final String[] CAT1_EXPENSE = {"🍚 吃", "🏠 住", "🎮 娱", "📚 教育", "🚗 交通", "🛒 购物", "🏥 医疗", "📌 其他"};
     // ---- 收入分类（含 emoji） ----
     private static final String[] CAT1_INCOME  = {"💼 工资", "📈 投资", "💻 兼职", "↩️ 退款", "🎁 礼金", "📌 其他"};
+    private static final String[] CATEGORY3_LABELS = {"维持", "消费", "提升", "社交"};
 
     private static final Map<String, List<String>> SUBS_EXPENSE = new HashMap<>();
     private static final Map<String, List<String>> SUBS_INCOME  = new HashMap<>();
@@ -160,9 +163,7 @@ public class AddTransactionSheet extends BottomSheetDialogFragment {
         if (dialog.getWindow() != null) {
             // 禁止系统键盘顶起 BottomSheet，备注栏自行跟随 IME 上移到键盘上方
             dialog.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_NOTHING);
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                dialog.getWindow().setDecorFitsSystemWindows(false);
-            }
+            WindowCompat.setDecorFitsSystemWindows(dialog.getWindow(), false);
         }
         dialog.setOnShowListener(d -> {
             View bottomSheet = dialog.findViewById(com.google.android.material.R.id.design_bottom_sheet);
@@ -217,6 +218,7 @@ public class AddTransactionSheet extends BottomSheetDialogFragment {
         btnTypeExpense.setMinimumWidth(0);
         btnTypeIncome.setMinimumWidth(0);
         loadAccounts();
+        setupCategory3Spinner();
         buildNumpad();
         setupListeners();
         updateDateTimeDisplay();
@@ -255,7 +257,9 @@ public class AddTransactionSheet extends BottomSheetDialogFragment {
         headerTypeSlot = view.findViewById(R.id.header_type_slot);
         level01TypeSlot = view.findViewById(R.id.level01_type_slot);
         typeToggleBar = view.findViewById(R.id.type_toggle_bar);
-        summaryCard = view.findViewById(R.id.summary_card);
+        summaryRow = view.findViewById(R.id.summary_row);
+        cardCategory3 = view.findViewById(R.id.card_category3);
+        spacerBeforeCategory3 = view.findViewById(R.id.spacer_before_category3);
         metaRow = view.findViewById(R.id.meta_row);
         level01 = view.findViewById(R.id.level01);
         level2 = view.findViewById(R.id.level2_scroll);
@@ -281,25 +285,34 @@ public class AddTransactionSheet extends BottomSheetDialogFragment {
         btnConfirm   = view.findViewById(R.id.btn_confirm);
         btnTypeExpense = view.findViewById(R.id.btn_type_expense);
         btnTypeIncome  = view.findViewById(R.id.btn_type_income);
-        category3Group = view.findViewById(R.id.category3_group);
-        category3Label = view.findViewById(R.id.text_category3_label);
         spinnerAccount = view.findViewById(R.id.spinner_account);
+        spinnerCategory3 = view.findViewById(R.id.spinner_category3);
         timePickerContainer = view.findViewById(R.id.time_picker_container);
 
-        View calRoot = view.findViewById(R.id.sheet_calendar);
+        View calRoot = panelDatePicker.findViewById(R.id.sheet_calendar);
         if (calRoot != null) {
-            sheetCalendarGrid = calRoot.findViewById(R.id.grid_days);
-            sheetCalendarTitle = calRoot.findViewById(R.id.txt_month_title);
-            calRoot.findViewById(R.id.btn_prev_month).setOnClickListener(v -> shiftSheetCalendarMonth(-1));
-            calRoot.findViewById(R.id.btn_next_month).setOnClickListener(v -> shiftSheetCalendarMonth(1));
+            sheetCalendarView = new MonthCalendarView(calRoot, true);
+            sheetCalendarView.setOnDayClickListener(this::applyPickedDate);
+            sheetCalendarView.setOnMonthTitleClickListener(ym ->
+                    YearMonthPickerDialog.show(requireContext(), ym, sheetCalendarView::jumpToYearMonth));
         }
 
-        category3Buttons = new Button[]{
-                view.findViewById(R.id.btn_cat_maintain),
-                view.findViewById(R.id.btn_cat_consume),
-                view.findViewById(R.id.btn_cat_improve),
-                view.findViewById(R.id.btn_cat_social)
-        };
+    }
+
+    private void setupCategory3Spinner() {
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(requireContext(),
+                android.R.layout.simple_spinner_item, CATEGORY3_LABELS);
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinnerCategory3.setAdapter(adapter);
+        spinnerCategory3.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override public void onItemSelected(AdapterView<?> parent, View v, int pos, long id) {
+                category3 = pos;
+            }
+            @Override public void onNothingSelected(AdapterView<?> parent) {}
+        });
+        if (category3 >= 0 && category3 < CATEGORY3_LABELS.length) {
+            spinnerCategory3.setSelection(category3);
+        }
     }
 
     // ══════════════════════════════════════════════
@@ -385,11 +398,6 @@ public class AddTransactionSheet extends BottomSheetDialogFragment {
         panelDatePicker.findViewById(R.id.btn_date_confirm).setOnClickListener(v -> hidePickerPanels());
         panelTimePicker.findViewById(R.id.btn_time_confirm).setOnClickListener(v -> hidePickerPanels());
 
-        for (int i = 0; i < category3Buttons.length; i++) {
-            final int idx = i;
-            category3Buttons[i].setOnClickListener(v -> selectCategory3(idx));
-        }
-
         btnConfirm.setOnClickListener(v -> onConfirm());
     }
 
@@ -418,7 +426,7 @@ public class AddTransactionSheet extends BottomSheetDialogFragment {
         // 预填充金额
         updateAmountDisplay();
         // 预选财务分类（仅支出）
-        if (t.getType() == 0 && category3 >= 0 && category3 < category3Buttons.length) {
+        if (t.getType() == 0 && category3 >= 0 && category3 < CATEGORY3_LABELS.length) {
             selectCategory3(category3);
         }
         titleText.setText("编辑记录");
@@ -443,8 +451,22 @@ public class AddTransactionSheet extends BottomSheetDialogFragment {
         level3Body.setVisibility(View.GONE);
         panelTimePicker.setVisibility(View.GONE);
         panelDatePicker.setVisibility(View.VISIBLE);
-        syncSheetCalendarToSelectedDate();
-        buildSheetCalendarGrid();
+        if (sheetCalendarView != null) {
+            sheetCalendarView.syncFromCalendar(selectedDate);
+            sheetCalendarView.setDailyExpenses(Collections.emptyMap());
+        }
+    }
+
+    private void applyPickedDate(String yyyyMmDd) {
+        if (yyyyMmDd == null) return;
+        try {
+            Date d = dateKeyFmt.parse(yyyyMmDd);
+            if (d != null) {
+                selectedDate.setTime(d);
+                updateDateTimeDisplay();
+                hidePickerPanels();
+            }
+        } catch (ParseException ignored) {}
     }
 
     private void showTimePickerPanel() {
@@ -633,10 +655,10 @@ public class AddTransactionSheet extends BottomSheetDialogFragment {
         String note = editNote.getText().toString().trim();
         if (note.isEmpty()) {
             textNote.setText("备注");
-            textNote.setTextColor(requireContext().getColor(R.color.text_hint));
+            textNote.setTextColor(ContextCompat.getColor(requireContext(), R.color.text_hint));
         } else {
             textNote.setText(note);
-            textNote.setTextColor(requireContext().getColor(R.color.text_primary));
+            textNote.setTextColor(ContextCompat.getColor(requireContext(), R.color.text_primary));
         }
     }
 
@@ -652,99 +674,6 @@ public class AddTransactionSheet extends BottomSheetDialogFragment {
             level3Body.setVisibility(View.VISIBLE);
         }
         updateDateTimeDisplay();
-    }
-
-    private void syncSheetCalendarToSelectedDate() {
-        sheetCalendarYearMonth = String.format(Locale.getDefault(), "%d-%02d",
-                selectedDate.get(Calendar.YEAR), selectedDate.get(Calendar.MONTH) + 1);
-        if (sheetCalendarTitle != null) {
-            String[] p = sheetCalendarYearMonth.split("-");
-            sheetCalendarTitle.setText(p[0] + "年" + Integer.parseInt(p[1]) + "月");
-        }
-    }
-
-    private void shiftSheetCalendarMonth(int delta) {
-        String[] parts = sheetCalendarYearMonth.split("-");
-        int y = Integer.parseInt(parts[0]);
-        int m = Integer.parseInt(parts[1]);
-        m += delta;
-        if (m < 1) { m = 12; y--; } else if (m > 12) { m = 1; y++; }
-        sheetCalendarYearMonth = String.format(Locale.getDefault(), "%d-%02d", y, m);
-        syncSheetCalendarToSelectedDate();
-        buildSheetCalendarGrid();
-    }
-
-    private void buildSheetCalendarGrid() {
-        if (sheetCalendarGrid == null) return;
-        sheetCalendarGrid.removeAllViews();
-        String[] parts = sheetCalendarYearMonth.split("-");
-        int year = Integer.parseInt(parts[0]);
-        int month = Integer.parseInt(parts[1]);
-
-        sheetCalendar.set(year, month - 1, 1);
-        int firstDow = sheetCalendar.get(Calendar.DAY_OF_WEEK) - 1;
-        int maxDay = sheetCalendar.getActualMaximum(Calendar.DAY_OF_MONTH);
-        Context ctx = requireContext();
-        float d = getResources().getDisplayMetrics().density;
-        int cellH = (int) (30 * d);
-
-        String selKey = String.format(Locale.getDefault(), "%d-%02d-%02d",
-                selectedDate.get(Calendar.YEAR),
-                selectedDate.get(Calendar.MONTH) + 1,
-                selectedDate.get(Calendar.DAY_OF_MONTH));
-        String todayKey = dateKeyFmt.format(new Date());
-
-        for (int i = 0; i < firstDow; i++) {
-            sheetCalendarGrid.addView(emptyCalCell(ctx, cellH));
-        }
-        for (int day = 1; day <= maxDay; day++) {
-            String dateKey = String.format(Locale.getDefault(), "%d-%02d-%02d", year, month, day);
-            boolean isToday = dateKey.equals(todayKey);
-            boolean isSelected = dateKey.equals(selKey);
-            TextView dayTv = new TextView(ctx);
-            dayTv.setText(String.valueOf(day));
-            dayTv.setGravity(Gravity.CENTER);
-            dayTv.setTextSize(15);
-            dayTv.setTypeface(null, isSelected ? Typeface.BOLD : Typeface.NORMAL);
-            dayTv.setTextColor(isSelected ? Color.WHITE
-                    : (isToday ? Color.parseColor("#1565C0") : Color.parseColor("#1A1A2E")));
-
-            GradientDrawable bg = new GradientDrawable();
-            bg.setCornerRadius(8 * d);
-            if (isSelected) {
-                bg.setColor(Color.parseColor("#2D9CDB"));
-            } else if (isToday) {
-                bg.setColor(Color.parseColor("#DBEAFE"));
-            } else {
-                bg.setColor(Color.TRANSPARENT);
-            }
-            dayTv.setBackground(bg);
-            dayTv.setPadding(0, (int) (8 * d), 0, (int) (8 * d));
-
-            GridLayout.LayoutParams lp = new GridLayout.LayoutParams();
-            lp.width = 0;
-            lp.height = cellH;
-            lp.columnSpec = GridLayout.spec(GridLayout.UNDEFINED, 1, 1f);
-            dayTv.setLayoutParams(lp);
-
-            final int fy = year, fm = month, fd = day;
-            dayTv.setOnClickListener(v -> {
-                selectedDate.set(fy, fm - 1, fd);
-                updateDateTimeDisplay();
-                hidePickerPanels();
-            });
-            sheetCalendarGrid.addView(dayTv);
-        }
-    }
-
-    private View emptyCalCell(Context ctx, int cellH) {
-        View v = new View(ctx);
-        GridLayout.LayoutParams lp = new GridLayout.LayoutParams();
-        lp.width = 0;
-        lp.height = cellH;
-        lp.columnSpec = GridLayout.spec(GridLayout.UNDEFINED, 1, 1f);
-        v.setLayoutParams(lp);
-        return v;
     }
 
     private void ensureTimePickers() {
@@ -834,28 +763,26 @@ public class AddTransactionSheet extends BottomSheetDialogFragment {
         }
     }
 
-    /** 支出：15+8+10+67；收入：18+12+70（无财务分类，比例重新分配），合计 100 */
+    /** 支出：18+10+72；收入：15+12+73（无财务分类 Spinner），合计 100 */
     private void applyFormLayoutWeights() {
-        if (summaryCard == null || metaRow == null || category3Group == null || numpadContainer == null) return;
-        LinearLayout.LayoutParams sumLp = (LinearLayout.LayoutParams) summaryCard.getLayoutParams();
-        LinearLayout.LayoutParams catLp = (LinearLayout.LayoutParams) category3Group.getLayoutParams();
+        if (summaryRow == null || metaRow == null || numpadContainer == null) return;
+        LinearLayout.LayoutParams sumLp = (LinearLayout.LayoutParams) summaryRow.getLayoutParams();
         LinearLayout.LayoutParams metaLp = (LinearLayout.LayoutParams) metaRow.getLayoutParams();
         LinearLayout.LayoutParams numpadLp = (LinearLayout.LayoutParams) numpadContainer.getLayoutParams();
         if (type == 0) {
-            sumLp.weight = 15f;
-            catLp.weight = 8f;
-            category3Group.setVisibility(View.VISIBLE);
-            metaLp.weight = 10f;
-            numpadLp.weight = 67f;
-        } else {
             sumLp.weight = 18f;
-            catLp.weight = 0f;
-            category3Group.setVisibility(View.GONE);
+            cardCategory3.setVisibility(View.VISIBLE);
+            spacerBeforeCategory3.setVisibility(View.VISIBLE);
+            metaLp.weight = 10f;
+            numpadLp.weight = 72f;
+        } else {
+            sumLp.weight = 15f;
+            cardCategory3.setVisibility(View.GONE);
+            spacerBeforeCategory3.setVisibility(View.GONE);
             metaLp.weight = 12f;
-            numpadLp.weight = 70f;
+            numpadLp.weight = 73f;
         }
-        summaryCard.setLayoutParams(sumLp);
-        category3Group.setLayoutParams(catLp);
+        summaryRow.setLayoutParams(sumLp);
         metaRow.setLayoutParams(metaLp);
         numpadContainer.setLayoutParams(numpadLp);
     }
@@ -1006,6 +933,9 @@ public class AddTransactionSheet extends BottomSheetDialogFragment {
     private void showForm() {
         titleText.setText(selectedCategory2);
         amountNegative = false;
+        if (type == 0 && category3 < 0) {
+            selectCategory3(0);
+        }
         ensureDefaultAccountSelected();
         collapseNotePanel();
         updateAmountDisplay();
@@ -1042,77 +972,111 @@ public class AddTransactionSheet extends BottomSheetDialogFragment {
     private void buildNumpad() {
         numpad.removeAllViews();
         float d = getResources().getDisplayMetrics().density;
-        int margin = (int) (2 * d);
-        // 4×4 人体工学布局：数字区左，运算符右列，底行小数/确认
+        int margin = (int) (3 * d);
+        // 4×4：右列功能键；底行 + - 0 确认
         String[][] keys = {
-                {"1", "2", "3", "+"},
-                {"4", "5", "6", "-"},
-                {"7", "8", "9", "C"},
-                {".", "0", "确认", null}
+                {"1", "2", "3", "⌫"},
+                {"4", "5", "6", "C"},
+                {"7", "8", "9", "."},
+                {"+", "-", "0", "确认"}
         };
         for (int r = 0; r < keys.length; r++) {
             for (int c = 0; c < keys[r].length; c++) {
                 String key = keys[r][c];
-                if (key == null) continue;
-
-                TextView keyView = new TextView(requireContext());
-                keyView.setGravity(Gravity.CENTER);
-                keyView.setClickable(true);
-                keyView.setFocusable(true);
-                GridLayout.LayoutParams params = new GridLayout.LayoutParams();
-                params.width = 0;
-                params.height = 0;
-                params.rowSpec = GridLayout.spec(r, 1, 1f);
-                if ("确认".equals(key)) {
-                    params.columnSpec = GridLayout.spec(c, 2, 1f);
-                } else {
-                    params.columnSpec = GridLayout.spec(c, 1, 1f);
-                }
-                params.setMargins(margin, margin, margin, margin);
-                keyView.setLayoutParams(params);
-                keyView.setPadding(0, 0, 0, 0);
-                keyView.setTextSize("确认".equals(key) ? 13 : 15);
-                keyView.setText(key);
-
-                GradientDrawable bg = new GradientDrawable();
-                bg.setCornerRadius(10 * d);
-                if ("确认".equals(key)) {
-                    bg.setColor(Color.parseColor("#2EAC68"));
-                    keyView.setTextColor(Color.WHITE);
-                } else if ("C".equals(key)) {
-                    bg.setColor(Color.parseColor("#FEE2E2"));
-                    keyView.setTextColor(Color.parseColor("#E5595A"));
-                } else if ("+".equals(key) || "-".equals(key)) {
-                    bg.setColor(Color.parseColor("#E8F4FD"));
-                    keyView.setTextColor(Color.parseColor("#2D9CDB"));
-                } else {
-                    bg.setColor(Color.WHITE);
-                    keyView.setTextColor(Color.parseColor("#1A1A2E"));
-                }
-                keyView.setBackground(bg);
-
-                if ("确认".equals(key)) {
-                    keyView.setOnClickListener(v -> onConfirm());
-                } else if ("C".equals(key)) {
-                    keyView.setOnClickListener(v -> onClearAmount());
-                } else if ("+".equals(key)) {
-                    keyView.setOnClickListener(v -> { amountNegative = false; updateAmountDisplay(); });
-                } else if ("-".equals(key)) {
-                    keyView.setOnClickListener(v -> {
-                        if (!"0".equals(amountBuilder.toString())) {
-                            amountNegative = !amountNegative;
-                            updateAmountDisplay();
-                        }
-                    });
-                } else if (".".equals(key)) {
-                    keyView.setOnClickListener(v -> onNumClick("."));
-                } else {
-                    final String digit = key;
-                    keyView.setOnClickListener(v -> onNumClick(digit));
-                }
-                numpad.addView(keyView);
+                applyNumpadKeyStyle(keyViewForKey(key, r, c, margin), key);
             }
         }
+    }
+
+    private TextView keyViewForKey(String key, int r, int c, int margin) {
+        TextView keyView = new TextView(requireContext());
+        keyView.setGravity(Gravity.CENTER);
+        keyView.setClickable(true);
+        keyView.setFocusable(true);
+        GridLayout.LayoutParams params = new GridLayout.LayoutParams();
+        params.width = 0;
+        params.height = 0;
+        params.rowSpec = GridLayout.spec(r, 1, 1f);
+        params.columnSpec = GridLayout.spec(c, 1, 1f);
+        params.setMargins(margin, margin, margin, margin);
+        keyView.setLayoutParams(params);
+        keyView.setText(key);
+        numpad.addView(keyView);
+        return keyView;
+    }
+
+    private void applyNumpadKeyStyle(TextView keyView, String key) {
+        float d = getResources().getDisplayMetrics().density;
+        boolean actionKey = "确认".equals(key) || "C".equals(key) || "⌫".equals(key)
+                || "+".equals(key) || "-".equals(key);
+        keyView.setTypeface(Typeface.DEFAULT, actionKey ? Typeface.BOLD : Typeface.NORMAL);
+        keyView.setTextSize("确认".equals(key) ? 14 : ("⌫".equals(key) ? 18 : ("+".equals(key) || "-".equals(key) ? 20 : 16)));
+
+        GradientDrawable bg = new GradientDrawable();
+        bg.setCornerRadius(12 * d);
+        if ("确认".equals(key)) {
+            bg.setColor(Color.parseColor("#2EAC68"));
+            keyView.setTextColor(Color.WHITE);
+        } else if ("⌫".equals(key)) {
+            bg.setColor(Color.parseColor("#FFF3E0"));
+            keyView.setTextColor(Color.parseColor("#E65100"));
+        } else if ("C".equals(key)) {
+            bg.setColor(Color.parseColor("#FEE2E2"));
+            keyView.setTextColor(Color.parseColor("#C62828"));
+        } else if ("+".equals(key) || "-".equals(key)) {
+            bg.setColor(Color.parseColor("#E8F4FD"));
+            keyView.setTextColor(Color.parseColor("#1565C0"));
+        } else if (".".equals(key)) {
+            bg.setColor(Color.parseColor("#EEF2FF"));
+            keyView.setTextColor(Color.parseColor("#4338CA"));
+        } else {
+            bg.setColor(Color.parseColor("#FFFFFF"));
+            keyView.setTextColor(Color.parseColor("#1F2937"));
+        }
+        bg.setStroke((int) (1 * d), Color.parseColor("#E5E7EB"));
+        keyView.setBackground(bg);
+
+        if ("确认".equals(key)) {
+            keyView.setOnClickListener(v -> onConfirm());
+        } else if ("C".equals(key)) {
+            keyView.setOnClickListener(v -> onClearAmount());
+        } else if ("⌫".equals(key)) {
+            keyView.setOnClickListener(v -> onBackspaceAmount());
+        } else if ("+".equals(key)) {
+            keyView.setOnClickListener(v -> onPlusKey());
+        } else if ("-".equals(key)) {
+            keyView.setOnClickListener(v -> onMinusKey());
+        } else if (".".equals(key)) {
+            keyView.setOnClickListener(v -> onNumClick("."));
+        } else {
+            final String digit = key;
+            keyView.setOnClickListener(v -> onNumClick(digit));
+        }
+    }
+
+    /** +：强制为正号显示 */
+    private void onPlusKey() {
+        amountNegative = false;
+        updateAmountDisplay();
+    }
+
+    /** -：在非零金额上切换正负号显示 */
+    private void onMinusKey() {
+        if (!"0".equals(amountBuilder.toString())) {
+            amountNegative = !amountNegative;
+            updateAmountDisplay();
+        }
+    }
+
+    private void onBackspaceAmount() {
+        if (amountBuilder.length() > 1) {
+            amountBuilder.deleteCharAt(amountBuilder.length() - 1);
+        } else {
+            amountBuilder.setLength(0);
+            amountBuilder.append("0");
+            amountNegative = false;
+        }
+        updateAmountDisplay();
     }
 
     private void onNumClick(String digit) {
@@ -1141,17 +1105,10 @@ public class AddTransactionSheet extends BottomSheetDialogFragment {
     //  财务分类
     // ══════════════════════════════════════════════
     private void selectCategory3(int idx) {
+        if (idx < 0 || idx >= CATEGORY3_LABELS.length) return;
         category3 = idx;
-        int[] colors = {Color.parseColor("#2196F3"), Color.parseColor("#FF9800"),
-                        Color.parseColor("#9C27B0"), Color.parseColor("#00BCD4")};
-        for (int i = 0; i < category3Buttons.length; i++) {
-            if (i == idx) {
-                category3Buttons[i].setBackgroundTintList(ColorStateList.valueOf(colors[i]));
-                category3Buttons[i].setTextColor(Color.WHITE);
-            } else {
-                category3Buttons[i].setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#EEEEEE")));
-                category3Buttons[i].setTextColor(Color.parseColor("#888888"));
-            }
+        if (spinnerCategory3 != null && spinnerCategory3.getSelectedItemPosition() != idx) {
+            spinnerCategory3.setSelection(idx);
         }
     }
 

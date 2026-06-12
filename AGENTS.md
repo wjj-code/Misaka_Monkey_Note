@@ -9,11 +9,9 @@
 
 ## 开工前必读
 
-修改本项目代码前，先阅读知识库：
-
-1. `.agents/SKILL.md` — 角色定位 + 知识库索引 + 完整工作规则
-2. `.agents/facts/class-method-reference.md` — 每个类每个方法的职责（改代码前必查影响范围）
-3. `.agents/facts/architecture-overview.md` — 分层架构与包结构
+1. `.agents/SKILL.md` — 知识库索引与工作规则（**勿在 `.agents/` 新建平行文档**）
+2. `.agents/facts/class-method-reference.md` — 改代码前必查
+3. `.agents/facts/architecture-overview.md` — 架构 + ASCII 流程图
 
 ## 强制规则（每次改代码都要做）
 

@@ -4,6 +4,80 @@
 
 ---
 
+## v1.0 (2026-06-12) — 文档：精简 `.agents/` 知识库
+
+### 变更
+- ASCII 流程图并入 `architecture-overview.md`（删除 `architecture-diagram.txt`）
+- 删除 `examples/`、`templates/bug-root-cause-report.md`、`new-feature-guide.md`、`data-release-checklist.md`（发版清单并入 `system-properties-reference.md`）
+- 精简 `SKILL.md` 索引；`user-request-log.md` 只保留最近摘要，详史以 `CHANGELOG.md` 为准
+
+---
+
+## v1.0 (2026-06-12) — UX：键盘恢复 + - 底行布局
+
+### 变更
+- 4×4 底行：`+` `-` `0` `确认`（± 浅蓝底、20sp）
+- `onPlusKey` / `onMinusKey`：正号复位、非零金额切换负号前缀显示
+
+---
+
+## v1.0 (2026-06-12) — 编译修复：键盘 setTypeface 参数类型
+
+### 修复
+- `setTypeface(Typeface, int)` 第二参须为 `Typeface.BOLD`/`NORMAL`，不可传 boolean
+
+---
+
+## v1.0 (2026-06-12) — UX：Level3 记账表单五项优化
+
+### 变更
+1. **选日期**：去掉「选择日期」标题；月历导航栏增高、去 inset，修复上月/下月显示不全
+2. **确定按钮**：`minHeight=44dp`、白字、`inset=0`，修复文字不显示
+3. **账户/金额**：拆成两个独立圆角 `MaterialCardView`
+4. **财务分类**：维持/消费/提升/社交改为 `spinner_category3`，与账户/金额同一行（支出可见，收入隐藏）
+5. **数字键盘**：去掉 ±；右侧列改为 ⌫(退格)/C/./确认；确认缩为单格；配色分区（数字白底、退格橙、清空红、小数紫、确认绿）
+
+---
+
+## v1.0 (2026-06-12) — 编译：消除 AddTransactionSheet deprecation 警告
+
+### 修复
+- `Window.setDecorFitsSystemWindows` → `WindowCompat.setDecorFitsSystemWindows`（targetSdk 36 已标记过时）
+- `Context.getColor` → `ContextCompat.getColor`
+
+---
+
+## v1.0 (2026-06-12) — UX：记账 Level3 紧凑日期选择器
+
+### 变更
+- 新增 `view_calendar_sheet.xml`（更小导航栏/字号/内边距），仅记账页 `include`
+- `MonthCalendarView(root, compact)`：`compact=true` 时格高 34dp、不显示日支出
+- 日历页仍用 `view_calendar.xml` + 默认构造，**不受影响**
+
+---
+
+## v1.0 (2026-06-12) — 编译修复：MonthCalendarView 跨包访问
+
+### 根因
+- `AddTransactionSheet`（`ui.add`）复用 `MonthCalendarView`（`ui.calendar`）时，构造器与监听器为包内可见，编译失败
+
+### 修复
+- `MonthCalendarView` 构造器、`On*Listener` 接口及 `syncFromCalendar` / `jumpToYearMonth` 等对外方法改为 `public`
+
+---
+
+## v1.0 (2026-06-12) — Bug 修复：记账选日期日历无法翻页 + 复用 MonthCalendarView
+
+### 根因
+- 布局虽 `include view_calendar`，但 Java 里**另写了一套** `buildSheetCalendarGrid`
+- `shiftSheetCalendarMonth` 翻页后又调 `syncSheetCalendarToSelectedDate()`，把年月**重置回已选日期**，表现为上月/下月点不动
+
+### 修复
+- 记账页改复用 `MonthCalendarView` + `YearMonthPickerDialog`（与日历页同组件）
+- 删除 ~90 行重复网格代码
+
+---
+
 ## v1.0 (2026-06-12) — 日历选月逻辑 + 账户类型筛选 + 需求录入规范
 
 ### 新增

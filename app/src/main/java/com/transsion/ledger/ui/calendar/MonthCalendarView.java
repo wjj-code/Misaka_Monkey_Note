@@ -31,35 +31,42 @@ public class MonthCalendarView {
     private final SimpleDateFormat yearMonthFmt = new SimpleDateFormat("yyyy-MM", Locale.getDefault());
     private String currentYearMonth;
     private String selectedDate;
+    private final boolean compact;
     private OnDayClickListener dayClickListener;
     private OnMonthChangedListener monthChangedListener;
     private OnMonthTitleClickListener monthTitleClickListener;
 
-    interface OnDayClickListener {
+    public interface OnDayClickListener {
         void onDayClick(String date); // yyyy-MM-dd
     }
 
-    interface OnMonthChangedListener {
+    public interface OnMonthChangedListener {
         void onMonthChanged(String yearMonth);
     }
 
-    interface OnMonthTitleClickListener {
+    public interface OnMonthTitleClickListener {
         void onMonthTitleClick(String yearMonth);
     }
 
-    void setOnDayClickListener(OnDayClickListener listener) {
+    public void setOnDayClickListener(OnDayClickListener listener) {
         this.dayClickListener = listener;
     }
 
-    void setOnMonthChangedListener(OnMonthChangedListener listener) {
+    public void setOnMonthChangedListener(OnMonthChangedListener listener) {
         this.monthChangedListener = listener;
     }
 
-    void setOnMonthTitleClickListener(OnMonthTitleClickListener listener) {
+    public void setOnMonthTitleClickListener(OnMonthTitleClickListener listener) {
         this.monthTitleClickListener = listener;
     }
 
-    MonthCalendarView(View rootView) {
+    public MonthCalendarView(View rootView) {
+        this(rootView, false);
+    }
+
+    /** @param compact 记账选日期等窄空间场景：更小格高、不展示日支出 */
+    public MonthCalendarView(View rootView, boolean compact) {
+        this.compact = compact;
         gridDays = rootView.findViewById(R.id.grid_days);
         txtMonthTitle = rootView.findViewById(R.id.txt_month_title);
 
@@ -78,23 +85,33 @@ public class MonthCalendarView {
         updateTitle();
     }
 
-    void setDailyExpenses(Map<String, Double> expenses) {
+    public void setDailyExpenses(Map<String, Double> expenses) {
         dailyExpenses.clear();
         if (expenses != null) dailyExpenses.putAll(expenses);
         buildGrid();
     }
 
-    void setSelectedDate(String date) {
+    public void setSelectedDate(String date) {
         selectedDate = date;
         buildGrid();
     }
 
-    String getCurrentYearMonth() {
+    public String getCurrentYearMonth() {
         return currentYearMonth;
     }
 
+    /** 记账选日期等场景：同步到指定 Calendar 的年月与选中高亮 */
+    public void syncFromCalendar(Calendar cal) {
+        if (cal == null) return;
+        currentYearMonth = String.format(Locale.getDefault(), "%d-%02d",
+                cal.get(Calendar.YEAR), cal.get(Calendar.MONTH) + 1);
+        selectedDate = dateFmt.format(cal.getTime());
+        updateTitle();
+        buildGrid();
+    }
+
     /** 跳转到指定年月并通知外部加载数据 */
-    void jumpToYearMonth(String yearMonth) {
+    public void jumpToYearMonth(String yearMonth) {
         if (yearMonth == null || yearMonth.equals(currentYearMonth)) return;
         currentYearMonth = yearMonth;
         updateTitle();
@@ -158,11 +175,16 @@ public class MonthCalendarView {
         }
     }
 
+    private int cellHeightPx(Context ctx) {
+        float dp = compact ? 34f : 50f;
+        return (int) (dp * ctx.getResources().getDisplayMetrics().density);
+    }
+
     private View createEmptyCell(Context ctx) {
         View v = new View(ctx);
         GridLayout.LayoutParams lp = new GridLayout.LayoutParams();
         lp.width = 0;
-        lp.height = (int) (50 * ctx.getResources().getDisplayMetrics().density);
+        lp.height = cellHeightPx(ctx);
         lp.columnSpec = GridLayout.spec(GridLayout.UNDEFINED, 1, 1f);
         v.setLayoutParams(lp);
         return v;
@@ -172,11 +194,11 @@ public class MonthCalendarView {
         LinearLayout cell = new LinearLayout(ctx);
         cell.setOrientation(LinearLayout.VERTICAL);
         cell.setGravity(Gravity.CENTER);
-        cell.setPadding(2, 6, 2, 6);
+        cell.setPadding(2, compact ? 3 : 6, 2, compact ? 3 : 6);
 
         GridLayout.LayoutParams lp = new GridLayout.LayoutParams();
         lp.width = 0;
-        lp.height = (int) (50 * ctx.getResources().getDisplayMetrics().density);
+        lp.height = cellHeightPx(ctx);
         lp.columnSpec = GridLayout.spec(GridLayout.UNDEFINED, 1, 1f);
         cell.setLayoutParams(lp);
 
@@ -189,7 +211,7 @@ public class MonthCalendarView {
         TextView dayTv = new TextView(ctx);
         dayTv.setText(String.valueOf(day));
         dayTv.setGravity(Gravity.CENTER);
-        dayTv.setTextSize(15);
+        dayTv.setTextSize(compact ? 13 : 15);
         if (isSelected) {
             dayTv.setTextColor(Color.WHITE);
         } else {
@@ -198,15 +220,17 @@ public class MonthCalendarView {
         cell.addView(dayTv, new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
 
-        TextView amountTv = new TextView(ctx);
-        if (expense != null && expense > 0) {
-            amountTv.setText(String.format("%.0f", expense));
-            amountTv.setTextSize(10);
-            amountTv.setTextColor(Color.parseColor("#E5595A"));
-            amountTv.setGravity(Gravity.CENTER);
+        if (!compact) {
+            TextView amountTv = new TextView(ctx);
+            if (expense != null && expense > 0) {
+                amountTv.setText(String.format("%.0f", expense));
+                amountTv.setTextSize(10);
+                amountTv.setTextColor(Color.parseColor("#E5595A"));
+                amountTv.setGravity(Gravity.CENTER);
+            }
+            cell.addView(amountTv, new LinearLayout.LayoutParams(
+                    ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
         }
-        cell.addView(amountTv, new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
 
         return cell;
     }

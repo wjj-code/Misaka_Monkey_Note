@@ -1,12 +1,9 @@
 package com.transsion.ledger.ui.calendar;
 
-import android.app.AlertDialog;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.LinearLayout;
-import android.widget.NumberPicker;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -153,47 +150,8 @@ public class CalendarFragment extends Fragment {
     }
 
     private void showMonthPickerDialog(String currentYearMonth) {
-        Calendar cal = Calendar.getInstance();
-        if (currentYearMonth != null) {
-            String[] parts = currentYearMonth.split("-");
-            cal.set(Integer.parseInt(parts[0]), Integer.parseInt(parts[1]) - 1, 1);
-        }
-
-        NumberPicker yearPicker = new NumberPicker(requireContext());
-        NumberPicker monthPicker = new NumberPicker(requireContext());
-
-        int thisYear = Calendar.getInstance().get(Calendar.YEAR);
-        yearPicker.setMinValue(thisYear - 10);
-        yearPicker.setMaxValue(thisYear + 5);
-        yearPicker.setValue(cal.get(Calendar.YEAR));
-        yearPicker.setWrapSelectorWheel(false);
-
-        monthPicker.setMinValue(1);
-        monthPicker.setMaxValue(12);
-        monthPicker.setValue(cal.get(Calendar.MONTH) + 1);
-        monthPicker.setDisplayedValues(new String[]{
-                "1月", "2月", "3月", "4月", "5月", "6月",
-                "7月", "8月", "9月", "10月", "11月", "12月"
-        });
-        monthPicker.setWrapSelectorWheel(false);
-
-        LinearLayout layout = new LinearLayout(requireContext());
-        layout.setOrientation(LinearLayout.HORIZONTAL);
-        layout.setPadding(32, 16, 32, 16);
-        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f);
-        layout.addView(yearPicker, lp);
-        layout.addView(monthPicker, lp);
-
-        new AlertDialog.Builder(requireContext())
-                .setTitle("选择年月")
-                .setView(layout)
-                .setPositiveButton("确定", (d, w) -> {
-                    String ym = String.format(Locale.getDefault(), "%d-%02d",
-                            yearPicker.getValue(), monthPicker.getValue());
-                    calendarView.jumpToYearMonth(ym);
-                })
-                .setNegativeButton("取消", null)
-                .show();
+        YearMonthPickerDialog.show(requireContext(), currentYearMonth,
+                calendarView::jumpToYearMonth);
     }
 
     private void showEmpty(String message) {
