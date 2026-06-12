@@ -1,0 +1,53 @@
+<resources>
+    <string name="app_name">呱太记账</string>
+
+    <string name="voice_title">语音记账</string>
+    <string name="voice_ime_hint">在下方输入框内，用系统键盘的「语音输入」说话，或手动输入/粘贴文字</string>
+    <string name="voice_ime_placeholder">点这里，用键盘麦克风说话…</string>
+    <string name="voice_ime_empty">请先输入或语音录入文字</string>
+    <string name="voice_parse_preview">解析预览</string>
+    <string name="voice_clear">清空</string>
+    <string name="voice_example_title">请照着下面这句话输入或口述（照读即可）：</string>
+    <string name="voice_example_expense">支出，类别吃，细则早餐，金额十五元，备注开会，账户微信，财务分类消费类</string>
+    <string name="voice_example_income">收入，类别工资，细则基本工资，金额五千，备注十一月工资，账户招行</string>
+    <!-- 类别=一级(吃)；细则=二级子项目(早餐/午餐等) -->
+    <string name="voice_raw_label">输入文字（可用键盘语音转文字）</string>
+    <!-- 备研：voice_raw_placeholder 原用于按住说话方案 -->
+    <string name="voice_raw_placeholder">按住下方按钮说话，识别文字会显示在这里…</string>
+    <string name="voice_parse_label">解析预览（关键词 + 正则匹配）</string>
+    <string name="voice_confirm">确认并记账</string>
+    <string name="voice_retry">重新说</string>
+    <string name="voice_use_system_asr">识别不准？试试系统语音输入</string>
+    <string name="voice_review_hint">请确认识别文字无误后再记账</string>
+    <string name="voice_status_network">网络异常导致识别失败(2)，请检查网络或重试</string>
+    <string name="voice_hint_wechat">按住下方按钮说话，松开后在本页显示文字</string>
+    <string name="voice_hint_custom">必填：支出/收入、类别、细则、金额；选填：备注、账户、财务分类</string>
+    <string name="voice_cancel_hint">手指上滑，取消输入</string>
+    <string name="voice_hold_label">按住 说话</string>
+    <string name="voice_release_label">松开 结束</string>
+    <string name="voice_status_idle">准备就绪</string>
+    <string name="voice_status_listening">正在聆听…</string>
+    <string name="voice_status_processing">识别中…</string>
+    <string name="voice_status_no_match">未听清，请重试</string>
+    <string name="voice_status_error">识别失败，请重试</string>
+    <string name="voice_status_cancelled">已取消</string>
+    <string name="voice_permission_denied">需要麦克风权限才能使用语音记账，请在弹窗中点「允许」</string>
+    <string name="voice_permission_rationale">语音记账需要使用麦克风，请允许「录音」权限</string>
+    <string name="voice_request_permission">申请权限</string>
+    <string name="voice_status_sync_permission">正在同步录音权限，请重新按住说话</string>
+    <string name="voice_status_system_asr_failed">系统语音未返回结果（小米界面报错多为网络问题，请连 WiFi 后重试）</string>
+    <string name="voice_permission_title">需要麦克风权限</string>
+    <string name="voice_permission_miui_hint">请在系统设置中允许「呱太记账」使用麦克风。\n\n小米/MIUI 路径：设置 → 应用设置 → 应用管理 → 呱太记账 → 权限管理 → 录音\n\n若已开启仍失败，请卸载后重新安装本应用（确保录音权限写入系统）。</string>
+    <string name="voice_open_settings">去设置</string>
+    <string name="voice_cancel">取消</string>
+    <string name="voice_status_mic_blocked">麦克风未授权，无法录音</string>
+    <string name="voice_status_mic_service_error">麦克风已授权，但语音服务无法录音（MIUI 常见）</string>
+    <string name="voice_mic_service_title">语音服务无法使用麦克风</string>
+    <string name="voice_mic_service_hint">系统显示已允许录音，但内置语音识别在部分小米机型上仍会失败。\n\n可尝试：\n1. 点「系统语音输入」改用小米语音界面\n2. 完全退出应用后重试\n3. 设置中关闭再打开「录音」权限后重启应用</string>
+    <string name="voice_hold_too_short">请按住说话（至少 0.5 秒）</string>
+    <string name="voice_status_retry_hold">识别器忙碌，请重新按住说话</string>
+    <string name="voice_not_available">未找到语音识别服务。请在系统设置中启用语音助手，或安装 Google 应用后重试（与麦克风权限无关）</string>
+    <string name="voice_status_system_fallback">按住说话，松手后将打开系统语音识别</string>
+    <string name="voice_saved">语音记账已保存</string>
+    <string name="voice_open_edit">必填项未齐，请补全账单</string>
+</resources>

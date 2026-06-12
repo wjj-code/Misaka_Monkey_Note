@@ -1,0 +1,521 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/sheet_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/surface">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+    <LinearLayout
+        android:id="@+id/header_bar"
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingHorizontal="8dp">
+
+        <ImageButton
+            android:id="@+id/btn_back"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:src="@android:drawable/ic_media_previous"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="返回"
+            android:visibility="gone" />
+
+        <FrameLayout
+            android:id="@+id/header_type_slot"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="4dp"
+            android:visibility="gone" />
+
+        <TextView
+            android:id="@+id/title_text"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="选择收支类型"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:gravity="center" />
+    </LinearLayout>
+
+    <FrameLayout
+        android:id="@+id/body_host"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+        <!-- Level 1 -->
+        <ScrollView
+            android:id="@+id/content_scroll"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scrollbars="none">
+
+            <LinearLayout
+                android:id="@+id/level01"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:paddingHorizontal="12dp"
+                android:paddingTop="8dp"
+                android:paddingBottom="8dp">
+
+                <FrameLayout
+                    android:id="@+id/level01_type_slot"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="8dp">
+
+                    <LinearLayout
+                        android:id="@+id/type_toggle_bar"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:background="@drawable/bg_type_toggle_track"
+                        android:padding="3dp">
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btn_type_expense"
+                            style="@style/Widget.Material3.Button.TextButton"
+                            android:layout_width="0dp"
+                            android:layout_height="36dp"
+                            android:layout_weight="1"
+                            android:layout_marginEnd="2dp"
+                            android:minWidth="0dp"
+                            android:minHeight="0dp"
+                            android:paddingHorizontal="8dp"
+                            android:text="支出"
+                            android:textSize="14sp"
+                            android:textStyle="bold"
+                            android:textColor="@android:color/white"
+                            android:insetTop="0dp"
+                            android:insetBottom="0dp"
+                            app:backgroundTint="#E5595A"
+                            app:cornerRadius="10dp" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btn_type_income"
+                            style="@style/Widget.Material3.Button.TextButton"
+                            android:layout_width="0dp"
+                            android:layout_height="36dp"
+                            android:layout_weight="1"
+                            android:minWidth="0dp"
+                            android:minHeight="0dp"
+                            android:paddingHorizontal="8dp"
+                            android:text="收入"
+                            android:textSize="14sp"
+                            android:textStyle="bold"
+                            android:textColor="#6B7280"
+                            android:insetTop="0dp"
+                            android:insetBottom="0dp"
+                            app:backgroundTint="#FFFFFF"
+                            app:cornerRadius="10dp" />
+                    </LinearLayout>
+                </FrameLayout>
+
+                <GridLayout
+                    android:id="@+id/grid_categories"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:columnCount="4" />
+            </LinearLayout>
+        </ScrollView>
+
+        <!-- Level 2：与 Level 1 同款小模块网格，超出可滚动 -->
+        <ScrollView
+            android:id="@+id/level2_scroll"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:visibility="gone"
+            android:scrollbars="none">
+
+            <GridLayout
+                android:id="@+id/grid_sub"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:columnCount="4"
+                android:paddingHorizontal="12dp"
+                android:paddingTop="8dp"
+                android:paddingBottom="8dp" />
+        </ScrollView>
+
+        <!-- Level 3 -->
+        <FrameLayout
+            android:id="@+id/level3"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:visibility="gone"
+            android:paddingHorizontal="12dp"
+            android:paddingTop="2dp"
+            android:paddingBottom="4dp">
+
+            <LinearLayout
+                android:id="@+id/level3_body"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical"
+                android:weightSum="100">
+
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/summary_card"
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="15"
+                    app:cardCornerRadius="10dp"
+                    app:cardElevation="0dp"
+                    app:strokeColor="@color/divider"
+                    app:strokeWidth="0.5dp"
+                    app:cardBackgroundColor="#F8FAFC">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:paddingHorizontal="10dp">
+
+                        <Spinner
+                            android:id="@+id/spinner_account"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:minHeight="36dp"
+                            android:background="@android:color/transparent" />
+
+                        <View
+                            android:layout_width="8dp"
+                            android:layout_height="1dp" />
+
+                        <TextView
+                            android:id="@+id/text_amount"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="0"
+                            android:textSize="22sp"
+                            android:textStyle="bold"
+                            android:textColor="@color/expense"
+                            android:maxLines="1" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <LinearLayout
+                    android:id="@+id/category3_group"
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="8"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginTop="3dp">
+
+                    <Button
+                        android:id="@+id/btn_cat_maintain"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:layout_marginEnd="3dp"
+                        android:text="维持"
+                        android:textSize="10sp"
+                        android:minWidth="0dp"
+                        android:minHeight="0dp"
+                        android:padding="0dp"
+                        android:insetTop="0dp"
+                        android:insetBottom="0dp"
+                        android:textColor="#888"
+                        android:backgroundTint="#EEEEEE" />
+
+                    <Button
+                        android:id="@+id/btn_cat_consume"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:layout_marginHorizontal="3dp"
+                        android:text="消费"
+                        android:textSize="10sp"
+                        android:minWidth="0dp"
+                        android:minHeight="0dp"
+                        android:padding="0dp"
+                        android:insetTop="0dp"
+                        android:insetBottom="0dp"
+                        android:textColor="#888"
+                        android:backgroundTint="#EEEEEE" />
+
+                    <Button
+                        android:id="@+id/btn_cat_improve"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:layout_marginHorizontal="3dp"
+                        android:text="提升"
+                        android:textSize="10sp"
+                        android:minWidth="0dp"
+                        android:minHeight="0dp"
+                        android:padding="0dp"
+                        android:insetTop="0dp"
+                        android:insetBottom="0dp"
+                        android:textColor="#888"
+                        android:backgroundTint="#EEEEEE" />
+
+                    <Button
+                        android:id="@+id/btn_cat_social"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:layout_marginStart="3dp"
+                        android:text="社交"
+                        android:textSize="10sp"
+                        android:minWidth="0dp"
+                        android:minHeight="0dp"
+                        android:padding="0dp"
+                        android:insetTop="0dp"
+                        android:insetBottom="0dp"
+                        android:textColor="#888"
+                        android:backgroundTint="#EEEEEE" />
+                </LinearLayout>
+
+                <TextView
+                    android:id="@+id/text_category3_label"
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    android:visibility="gone" />
+
+                <LinearLayout
+                    android:id="@+id/meta_row"
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="10"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginTop="3dp"
+                    android:background="@drawable/bg_form_meta_row"
+                    android:paddingHorizontal="8dp"
+                    android:paddingVertical="4dp">
+
+                    <TextView
+                        android:id="@+id/text_date"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="2025年06月11日"
+                        android:textSize="11sp"
+                        android:textColor="@color/balance"
+                        android:textStyle="bold"
+                        android:background="?attr/selectableItemBackground"
+                        android:padding="3dp"
+                        android:clickable="true"
+                        android:focusable="true" />
+
+                    <TextView
+                        android:id="@+id/text_time"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="6dp"
+                        android:text="14时30分"
+                        android:textSize="11sp"
+                        android:textColor="@color/text_secondary"
+                        android:textStyle="bold"
+                        android:background="?attr/selectableItemBackground"
+                        android:padding="3dp"
+                        android:clickable="true"
+                        android:focusable="true" />
+
+                    <View
+                        android:layout_width="1dp"
+                        android:layout_height="match_parent"
+                        android:layout_marginHorizontal="4dp"
+                        android:background="@color/divider" />
+
+                    <TextView
+                        android:id="@+id/text_note"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:gravity="center_vertical"
+                        android:text="备注"
+                        android:textSize="11sp"
+                        android:textColor="@color/text_hint"
+                        android:background="?attr/selectableItemBackground"
+                        android:padding="3dp"
+                        android:maxLines="2"
+                        android:ellipsize="end"
+                        android:clickable="true"
+                        android:focusable="true" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/numpad_container"
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="67"
+                    android:orientation="vertical"
+                    android:layout_marginTop="4dp"
+                    android:background="#F8FAFC"
+                    android:paddingHorizontal="2dp"
+                    android:paddingBottom="2dp">
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:background="@color/divider" />
+
+                    <GridLayout
+                        android:id="@+id/numpad"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:columnCount="4"
+                        android:rowCount="4"
+                        android:paddingTop="2dp" />
+                </LinearLayout>
+
+                <TextView
+                    android:id="@+id/text_datetime"
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    android:visibility="gone" />
+
+                <Button
+                    android:id="@+id/btn_confirm"
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    android:visibility="gone" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/panel_date_picker"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical"
+                android:visibility="gone"
+                android:background="@color/surface"
+                android:padding="6dp">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="选择日期"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/text_primary"
+                    android:gravity="center"
+                    android:paddingBottom="4dp" />
+
+                <include
+                    android:id="@+id/sheet_calendar"
+                    layout="@layout/view_calendar"
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="1" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_date_confirm"
+                    android:layout_width="match_parent"
+                    android:layout_height="36dp"
+                    android:layout_marginTop="4dp"
+                    android:text="确定"
+                    app:backgroundTint="@color/balance"
+                    app:cornerRadius="8dp" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/panel_time_picker"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical"
+                android:visibility="gone"
+                android:background="@color/surface"
+                android:gravity="center"
+                android:padding="10dp">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="选择时间"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/text_primary"
+                    android:gravity="center"
+                    android:paddingBottom="8dp" />
+
+                <LinearLayout
+                    android:id="@+id/time_picker_container"
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="1"
+                    android:orientation="horizontal"
+                    android:gravity="center" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_time_confirm"
+                    android:layout_width="match_parent"
+                    android:layout_height="36dp"
+                    android:layout_marginTop="4dp"
+                    android:text="确定"
+                    app:backgroundTint="@color/balance"
+                    app:cornerRadius="8dp" />
+            </LinearLayout>
+        </FrameLayout>
+    </FrameLayout>
+
+    </LinearLayout>
+
+    <!-- 备注遮罩 + 弹栏：挂在弹窗根层，输入时随键盘上移到键盘上方 -->
+    <View
+        android:id="@+id/note_scrim"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#40000000"
+        android:visibility="gone"
+        android:clickable="true"
+        android:focusable="true" />
+
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/panel_note_bottom"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:visibility="gone"
+        app:cardCornerRadius="10dp"
+        app:cardElevation="8dp"
+        app:cardBackgroundColor="@color/surface">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="10dp">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="备注"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                android:textColor="@color/text_secondary"
+                android:paddingBottom="4dp" />
+
+            <EditText
+                android:id="@+id/edit_note"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:minLines="1"
+                android:maxLines="5"
+                android:hint="输入备注…"
+                android:textSize="13sp"
+                android:textColor="@color/text_primary"
+                android:textColorHint="@color/text_hint"
+                android:background="@drawable/bg_form_meta_row"
+                android:padding="8dp"
+                android:gravity="top|start"
+                android:inputType="textMultiLine|textCapSentences"
+                android:imeOptions="actionDone" />
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+
+</FrameLayout>

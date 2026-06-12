@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 基础 -->
+    <color name="black">#1A1A2E</color>
+    <color name="white">#FFFFFF</color>
+
+    <!-- 主题色：柔和蓝 -->
+    <color name="primary">#2D9CDB</color>
+    <color name="primary_dark">#1B7FB8</color>
+    <color name="on_primary">#FFFFFF</color>
+
+    <!-- 背景 -->
+    <color name="background">#F2F4F7</color>
+    <color name="surface">#FFFFFF</color>
+    <color name="surface_variant">#F8F9FB</color>
+
+    <!-- 文字 -->
+    <color name="text_primary">#1A1A2E</color>
+    <color name="text_secondary">#6B7280</color>
+    <color name="text_hint">#9CA3AF</color>
+
+    <!-- 语义色 -->
+    <color name="expense">#E5595A</color>
+    <color name="income">#2EAC68</color>
+    <color name="balance">#2D9CDB</color>
+
+    <!-- 财务四分类 -->
+    <color name="cat_maintain">#5B8DEF</color>
+    <color name="cat_consume">#F59E4B</color>
+    <color name="cat_improve">#A855F7</color>
+    <color name="cat_social">#06B6D4</color>
+
+    <!-- 分隔线 -->
+    <color name="divider">#E5E7EB</color>
+
+    <!-- 卡片阴影色 -->
+    <color name="shadow">#1A000000</color>
+</resources>

@@ -1,0 +1,232 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/voice_overlay_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#CC1A1A2E"
+    android:clickable="true"
+    android:focusable="true">
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:fillViewport="true">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="center_horizontal"
+            android:paddingBottom="24dp">
+
+            <TextView
+                android:id="@+id/txt_voice_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="40dp"
+                android:text="@string/voice_title"
+                android:textColor="@color/white"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:layout_marginHorizontal="20dp"
+                app:cardCornerRadius="12dp"
+                app:cardBackgroundColor="#33FFFFFF"
+                app:strokeColor="#55FFFFFF"
+                app:strokeWidth="1dp"
+                app:cardElevation="0dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="14dp">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/voice_example_title"
+                        android:textColor="#CCFFFFFF"
+                        android:textSize="13sp" />
+
+                    <TextView
+                        android:id="@+id/txt_voice_example"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:text="@string/voice_example_expense"
+                        android:textColor="@color/white"
+                        android:textSize="16sp"
+                        android:textStyle="bold"
+                        android:lineSpacingExtra="6dp" />
+
+                    <com.google.android.material.button.MaterialButtonToggleGroup
+                        android:id="@+id/toggle_example_type"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        app:singleSelection="true"
+                        app:selectionRequired="true">
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btn_example_expense"
+                            style="@style/Widget.Material3.Button.OutlinedButton"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="支出示例"
+                            android:textColor="@color/white"
+                            android:checked="true" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btn_example_income"
+                            style="@style/Widget.Material3.Button.OutlinedButton"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="收入示例"
+                            android:textColor="@color/white" />
+                    </com.google.android.material.button.MaterialButtonToggleGroup>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <TextView
+                android:id="@+id/txt_voice_status"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:layout_marginHorizontal="20dp"
+                android:gravity="center"
+                android:text="@string/voice_ime_hint"
+                android:textColor="@color/white"
+                android:textSize="14sp"
+                android:lineSpacingExtra="4dp" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:layout_marginHorizontal="20dp"
+                android:text="@string/voice_raw_label"
+                android:textColor="#99FFFFFF"
+                android:textSize="12sp" />
+
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:layout_marginHorizontal="20dp"
+                app:cardCornerRadius="10dp"
+                app:cardBackgroundColor="#EEFFFFFF"
+                app:cardElevation="0dp">
+
+                <EditText
+                    android:id="@+id/edit_voice_raw"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:minHeight="120dp"
+                    android:padding="14dp"
+                    android:gravity="start|top"
+                    android:hint="@string/voice_ime_placeholder"
+                    android:textColor="@color/text_primary"
+                    android:textColorHint="@color/text_hint"
+                    android:textSize="16sp"
+                    android:lineSpacingExtra="4dp"
+                    android:inputType="textMultiLine|textCapSentences"
+                    android:imeOptions="actionDone"
+                    android:background="@android:color/transparent" />
+            </com.google.android.material.card.MaterialCardView>
+
+            <TextView
+                android:id="@+id/btn_voice_clear"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:padding="8dp"
+                android:text="@string/voice_clear"
+                android:textColor="#99FFFFFF"
+                android:textSize="13sp"
+                android:background="?attr/selectableItemBackground" />
+
+            <LinearLayout
+                android:id="@+id/panel_parse_preview"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_marginTop="12dp"
+                android:layout_marginHorizontal="20dp"
+                android:visibility="gone">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/voice_parse_label"
+                    android:textColor="#99FFFFFF"
+                    android:textSize="12sp" />
+
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    app:cardCornerRadius="10dp"
+                    app:cardBackgroundColor="#33FFFFFF"
+                    app:cardElevation="0dp">
+
+                    <TextView
+                        android:id="@+id/txt_voice_parse_preview"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:padding="12dp"
+                        android:textColor="#E6FFFFFF"
+                        android:textSize="14sp"
+                        android:lineSpacingExtra="4dp" />
+                </com.google.android.material.card.MaterialCardView>
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/panel_actions"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_marginTop="16dp"
+                android:layout_marginHorizontal="20dp">
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_voice_parse"
+                    style="@style/Widget.Material3.Button.OutlinedButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="44dp"
+                    android:text="@string/voice_parse_preview"
+                    android:textColor="@color/white"
+                    app:strokeColor="#88FFFFFF"
+                    app:cornerRadius="10dp" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_voice_confirm"
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:layout_marginTop="8dp"
+                    android:text="@string/voice_confirm"
+                    android:enabled="false"
+                    app:backgroundTint="@color/balance"
+                    app:cornerRadius="10dp" />
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/btn_voice_close"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:padding="12dp"
+                android:text="关闭"
+                android:textColor="#99FFFFFF"
+                android:textSize="14sp"
+                android:background="?attr/selectableItemBackground" />
+        </LinearLayout>
+    </ScrollView>
+</FrameLayout>
